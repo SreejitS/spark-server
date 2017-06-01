@@ -34,6 +34,11 @@ var util = require('util');
 var path = require('path');
 var ursa = require('ursa');
 var moment = require('moment');
+var crypto = require('crypto');
+// var corepath;
+
+// var corepath = settings.getToCores();
+
 
 /*
  * TODO: modularize duplicate code
@@ -69,7 +74,7 @@ var Api = {
 	getSocketID: function (userID) {
 		return userID + "_" + global._socket_counter++;
 	},
-
+    
 	getUserID: function (req) {
 		if (!req.user) {
 			logger.log("User obj was empty");
@@ -79,13 +84,20 @@ var Api = {
 		return req.user.id;
 	},
 
+
 	list_devices: function (req, res) {
+		
 		var userid = Api.getUserID(req);
+
 		logger.log("ListDevices", { userID: userid });
 
+     	// corepath = settings.getToCores(userid);		
+		global.server.loadCoreData(userid);
+		// console.log(corepath);
+        
 		//give me all the cores
 
-		var allCoreIDs = global.server.getAllCoreIDs(),
+		var allCoreIDs = global.server.getAllCoreIDs(userid),
 			devices = [],
 			connected_promises = [];
 
@@ -125,6 +137,7 @@ var Api = {
 			res.json(200, devices);
 		});
 	},
+
 
 	get_core_attributes: function (req, res) {
 		var userid = Api.getUserID(req);
@@ -182,6 +195,7 @@ var Api = {
 					functions: (coreState) ? coreState.f : null,
 					cc3000_patch_version: doc.cc3000_driver_version
 				};
+				console.log(dog);
 
 				if (utilities.check_requires_update(doc, settings.cc3000_driver_version)) {
 					device["requires_deep_update"] = true;
@@ -673,7 +687,7 @@ var Api = {
 		}
 
 
-		global.server.addCoreKey(deviceID, publicKey);
+		global.server.addCoreKey(userid, deviceID, publicKey);
 		global.server.setCoreAttribute(deviceID, "registrar", userid);
 		global.server.setCoreAttribute(deviceID, "timestamp", new Date());
 		result.resolve("Success!");
@@ -686,3 +700,4 @@ var Api = {
 };
 
 exports = module.exports = Api;
+//implement :: save core data

@@ -15,20 +15,19 @@
 *
 *    You can download the source here: https://github.com/spark/spark-server
 */
-
 var fs = require('fs');
 var http = require('http');
 var express = require('express');
-
 
 var settings = require('./settings.js');
 var utilities = require("./lib/utilities.js");
 var logger = require('./lib/logger.js');
 
 var OAuthServer = require('node-oauth2-server');
+// loading of users happen here
 var OAuth2ServerModel = require('./lib/OAuth2ServerModel');
-var AccessTokenViews = require('./lib/AccessTokenViews.js');
 
+var AccessTokenViews = require('./lib/AccessTokenViews.js');
 global._socket_counter = 1;
 
 var oauth = OAuthServer({
@@ -57,7 +56,6 @@ var set_cors_headers = function (req, res, next) {
 		next();
 	}
 };
-
 //TODO: something better here
 process.on('uncaughtException', function (ex) {
 	var details = '';
@@ -76,11 +74,9 @@ app.use(oauth.errorHandler());
 
 var UserCreator = require('./lib/UserCreator.js');
 app.post('/v1/users', UserCreator.getMiddleware());
-
 var api = require('./views/api_v1.js');
 var eventsV1 = require('./views/EventViews001.js');
 var tokenViews = new AccessTokenViews({  });
-
 
 eventsV1.loadViews(app);
 api.loadViews(app);
@@ -88,11 +84,9 @@ tokenViews.loadViews(app);
 
 
 
-
 app.use(function (req, res, next) {
 	return res.send(404);
 });
-
 
 var node_port = process.env.NODE_PORT || '8080';
 node_port = parseInt(node_port);
@@ -100,17 +94,19 @@ node_port = parseInt(node_port);
 console.log("Starting server, listening on " + node_port);
 http.createServer(app).listen(node_port);
 
-
+//things must be done in this block@
 var DeviceServer = require("spark-protocol").DeviceServer;
 var server = new DeviceServer({
-	coreKeysDir: settings.coreKeysDir
+	coreKeysDir: settings.coreKeysDir,
 });
+
 global.server = server;
 server.start();
+
+
 
 
 var ips = utilities.getIPAddresses();
 for(var i=0;i<ips.length;i++) {
 	console.log("Your server IP address is: " + ips[i]);
 }
-
