@@ -94,13 +94,18 @@ var Api = {
      	// corepath = settings.getToCores(userid);		
 		global.server.loadCoreData(userid);
 		// console.log(corepath);
-        
+         
 		//give me all the cores
 
-		var allCoreIDs = global.server.getAllCoreIDs(userid),
+		var allCoreIDs = global.server.getAllCoreIDs(userid);
+		// console.log(allCoreIDs);
 			devices = [],
 			connected_promises = [];
-
+		if(allCoreIDs == null){
+			var devices = ("no device is claimed by this user");
+			res.json(200, devices);			
+		}
+		else{
 		for (var coreid in allCoreIDs) {
 			if (!coreid) {
 				continue;
@@ -136,6 +141,7 @@ var Api = {
 
 			res.json(200, devices);
 		});
+		}
 	},
 
 
@@ -195,7 +201,6 @@ var Api = {
 					functions: (coreState) ? coreState.f : null,
 					cc3000_patch_version: doc.cc3000_driver_version
 				};
-				console.log(dog);
 
 				if (utilities.check_requires_update(doc, settings.cc3000_driver_version)) {
 					device["requires_deep_update"] = true;
